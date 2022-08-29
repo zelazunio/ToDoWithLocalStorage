@@ -6,18 +6,26 @@
         class="h-75 align-self-center w-100 contentContainer"
       >
         <b-col class="justify-content-center">
+          <b-form-input v-model="nameSearch"
+            placeholder="Name filter"
+            class="m-2 w-50"
+          />
           <todo-renderer
-            v-for="todo in todos"
+            v-for="todo in filteredTodos"
             :key="todo.id"
             :todo="todo"
+            :names="owners"
             @discardEdition="discardEdition"
-            @saveEditedTodo="saveTodo"
+            @saveEditedTodo="saveEditedTodo"
+            @deleteTodo="showDeleteTodoModal"
           />
           <todo-renderer
             :todo="newTodo"
+            :names="owners"
             force-edition
             v-if="addNewTodo"
             @discardEdition="cancelAddingNewTodo"
+            @saveEditedTodo="addTodo"
           />
           <div class="container-fluid" v-if="!addNewTodo">
             <b-row class="align-self-center w-100">
@@ -31,12 +39,23 @@
         </b-col>
       </b-row>
     </b-container>
+    <b-modal v-model="showDeleteModal">
+    <template v-slot:modal-header>
+      Delete ToDo
+    </template>
+      Confirm operation
+      <template v-slot:modal-footer>
+        <b-btn variant="primary" @click="deleteTodo">OK</b-btn>
+        <b-btn @click="showDeleteModal=false">Cancel</b-btn>
+      </template>
+    </b-modal>
   </div>
 </template>
 
 <script>
 import todoRenderer from "./components/todoRenderer.vue";
 import TodoRenderer from "./components/todoRenderer.vue";
+import Vue from "vue";
 
 export default {
   name: "App",
@@ -46,13 +65,20 @@ export default {
   },
   data() {
     return {
-      todos: {
-        1: { id: 1, owner: "Mark", text: "Kupić ogóry", done: false },
-        2: { id: 2, owner: "Mark", text: "Kupić papier", done: false },
-      },
+      todos: {},
       newTodo: { owner: "", text: "" },
       addNewTodo: false,
+      showDeleteModal: false,
+      todoToDeleteId: null,
+      nameSearch:''
     };
+  },
+  created() {
+    try {
+      this.todos = {...this.todos, ...JSON.parse(localStorage.getItem("MyTodos"))};
+    } catch (e) {
+      console.debug(e);
+    }
   },
   methods: {
     activateAddNewTodo() {
@@ -63,11 +89,51 @@ export default {
       this.todos[params.todo.id].owner = params.rememberedOwner;
       this.todos[params.todo.id].text = params.rememberedText;
     },
-    saveTodo() {},
+    saveEditedTodo(params) {
+      let newTodo = { id: params.id, owner: params.owner, text: params.text };
+      Vue.set(this.todos, params.id, newTodo);
+      this.saveTodos();
+      this.addNewTodo = false;
+    },
+    addTodo(params) {
+      let newTodoId = Math.max(...[0, ...Object.keys(this.todos)]) + 1;
+      let newTodo = { id: newTodoId, owner: params.owner, text: params.text };
+      Vue.set(this.todos, newTodoId, newTodo);
+      this.saveTodos();
+      this.addNewTodo = false;
+    },
+    saveTodos() {
+      try {
+        localStorage.setItem("MyTodos", JSON.stringify(this.todos));
+      } catch (e) {
+        console.debug(e);
+      }
+    },
     cancelAddingNewTodo() {
       this.addNewTodo = false;
     },
+    showDeleteTodoModal(params) {
+      this.todoToDeleteId = params.id;
+      this.showDeleteModal = true;
+    },
+    deleteTodo() {
+      Vue.delete(this.todos, this.todoToDeleteId);
+      this.saveTodos();
+      this.showDeleteModal = false;
+    }
   },
+  computed: {
+    owners() {
+      return Array.from(new Set(Object.values(this.todos).map(todo=>(todo.owner))));
+    },
+    filteredTodos() {
+      let result = {};
+      Object.values(this.todos).forEach(todo => {
+       if (todo.owner.toLowerCase().includes(this.nameSearch.toLowerCase())) result[todo.id] = todo;
+      })
+      return result;
+    }
+  }
 };
 </script>
 
