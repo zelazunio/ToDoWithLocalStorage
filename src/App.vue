@@ -5,48 +5,59 @@
         align-v="center"
         class="h-75 align-self-center w-100 contentContainer"
       >
-        <b-col class="justify-content-center">
-          <b-form-input v-model="nameSearch"
-            placeholder="Name filter"
-            class="m-2 w-50"
-          />
-          <todo-renderer
-            v-for="todo in filteredTodos"
-            :key="todo.id"
-            :todo="todo"
-            :names="owners"
-            @discardEdition="discardEdition"
-            @saveEditedTodo="saveEditedTodo"
-            @deleteTodo="showDeleteTodoModal"
-          />
-          <todo-renderer
-            :todo="newTodo"
-            :names="owners"
-            force-edition
-            v-if="addNewTodo"
-            @discardEdition="cancelAddingNewTodo"
-            @saveEditedTodo="addTodo"
-          />
-          <div class="container-fluid" v-if="!addNewTodo">
-            <b-row class="align-self-center w-100">
-              <b-col class="d-flex justify-content-center">
-                <b-btn pill variant="success" @click="activateAddNewTodo">
-                  <b-icon-plus-circle-fill></b-icon-plus-circle-fill>
-                </b-btn>
-              </b-col>
-            </b-row>
-          </div>
+        <b-col class="h-100 pt-2 pb-2 d-flex flex-column">
+          <b-row>
+            <b-col>
+              <b-form-input
+                v-model="nameSearch"
+                placeholder="Name filter"
+                class="m-2 w-50"
+              />
+            </b-col>
+          </b-row>
+          <b-row class="flex-grow-1" style="overflow-y: auto">
+            <b-col>
+              <todo-renderer
+                v-for="todo in filteredTodos"
+                :key="todo.id"
+                :todo="todo"
+                :names="owners"
+                @discardEdition="discardEdition"
+                @saveEditedTodo="saveEditedTodo"
+                @deleteTodo="showDeleteTodoModal"
+              />
+            </b-col>
+          </b-row>
+          <b-row>
+            <b-col>
+              <todo-renderer
+                :todo="newTodo"
+                :names="owners"
+                force-edition
+                v-if="addNewTodo"
+                @discardEdition="cancelAddingNewTodo"
+                @saveEditedTodo="addTodo"
+              />
+              <div class="container-fluid" v-if="!addNewTodo">
+                <b-row class="align-self-center w-100">
+                  <b-col class="d-flex justify-content-center">
+                    <b-btn pill variant="success" @click="activateAddNewTodo">
+                      <b-icon-plus-circle-fill></b-icon-plus-circle-fill>
+                    </b-btn>
+                  </b-col>
+                </b-row>
+              </div>
+            </b-col>
+          </b-row>
         </b-col>
       </b-row>
     </b-container>
     <b-modal v-model="showDeleteModal">
-    <template v-slot:modal-header>
-      Delete ToDo
-    </template>
+      <template v-slot:modal-header> Delete ToDo </template>
       Confirm operation
       <template v-slot:modal-footer>
         <b-btn variant="primary" @click="deleteTodo">OK</b-btn>
-        <b-btn @click="showDeleteModal=false">Cancel</b-btn>
+        <b-btn @click="showDeleteModal = false">Cancel</b-btn>
       </template>
     </b-modal>
   </div>
@@ -70,12 +81,15 @@ export default {
       addNewTodo: false,
       showDeleteModal: false,
       todoToDeleteId: null,
-      nameSearch:''
+      nameSearch: "",
     };
   },
   created() {
     try {
-      this.todos = {...this.todos, ...JSON.parse(localStorage.getItem("MyTodos"))};
+      this.todos = {
+        ...this.todos,
+        ...JSON.parse(localStorage.getItem("MyTodos")),
+      };
     } catch (e) {
       console.debug(e);
     }
@@ -93,7 +107,6 @@ export default {
       let newTodo = { id: params.id, owner: params.owner, text: params.text };
       Vue.set(this.todos, params.id, newTodo);
       this.saveTodos();
-      this.addNewTodo = false;
     },
     addTodo(params) {
       let newTodoId = Math.max(...[0, ...Object.keys(this.todos)]) + 1;
@@ -120,20 +133,23 @@ export default {
       Vue.delete(this.todos, this.todoToDeleteId);
       this.saveTodos();
       this.showDeleteModal = false;
-    }
+    },
   },
   computed: {
     owners() {
-      return Array.from(new Set(Object.values(this.todos).map(todo=>(todo.owner))));
+      return Array.from(
+        new Set(Object.values(this.todos).map((todo) => todo.owner))
+      );
     },
     filteredTodos() {
       let result = {};
-      Object.values(this.todos).forEach(todo => {
-       if (todo.owner.toLowerCase().includes(this.nameSearch.toLowerCase())) result[todo.id] = todo;
-      })
+      Object.values(this.todos).forEach((todo) => {
+        if (todo.owner.toLowerCase().includes(this.nameSearch.toLowerCase()))
+          result[todo.id] = todo;
+      });
       return result;
-    }
-  }
+    },
+  },
 };
 </script>
 
