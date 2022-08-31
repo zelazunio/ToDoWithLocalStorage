@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <b-container class="h-100 d-flex">
+    <b-container class="h-100 d-flex justify-content-center">
       <b-row
         align-v="center"
         class="h-75 align-self-center w-100 contentContainer"

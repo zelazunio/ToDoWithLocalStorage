@@ -23,7 +23,7 @@
           </div>
         </div>
       </div>
-      <div class="col-xs-1 col-sm-2 col-md-3 col-lg-2 col-xl-2">
+      <div class="col-xs-1 col-sm-2 col-md-3 col-lg-2 col-xl-2 pt-1 d-flex justify-content-center">
         <b-btn
           pill
           variant="primary"
